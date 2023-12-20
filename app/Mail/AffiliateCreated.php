@@ -4,7 +4,6 @@ namespace App\Mail;
 
 use App\Models\Affiliate;
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
 
@@ -19,7 +18,9 @@ class AffiliateCreated extends Mailable
      */
     public function __construct(
         public Affiliate $affiliate
-    ) {}
+    )
+    {
+    }
 
     /**
      * Build the message.
@@ -28,6 +29,6 @@ class AffiliateCreated extends Mailable
      */
     public function build()
     {
-        return $this->view('view.name');
+        return $this->view('emails.affiliate');
     }
 }

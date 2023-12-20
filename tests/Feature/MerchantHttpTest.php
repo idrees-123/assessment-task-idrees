@@ -55,6 +55,8 @@ class MerchantHttpTest extends TestCase
         $response = $this->actingAs($this->merchant->user)
             ->json('GET', route('merchant.order-stats'), compact('from', 'to'));
 
+
+        dump($response['count']);
         $this->assertEquals($between->count(), $response['count']);
         $this->assertEquals($between->sum('subtotal'), $response['revenue']);
         $this->assertEquals($between->sum('commission_owed') - $noAffiliate->commission_owed, $response['commissions_owed']);

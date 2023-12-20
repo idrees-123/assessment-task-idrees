@@ -21,6 +21,7 @@ class Order extends Model
     const STATUS_PAID = 'paid';
 
     protected $fillable = [
+        'external_order_id',
         'merchant_id',
         'affiliate_id',
         'subtotal',

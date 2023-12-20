@@ -7,6 +7,9 @@ use App\Models\Affiliate;
 use App\Models\Merchant;
 use App\Models\Order;
 use App\Models\User;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Str;
 
 class MerchantService
 {
@@ -21,6 +24,22 @@ class MerchantService
     public function register(array $data): Merchant
     {
         // TODO: Complete this method
+
+        $user = User::with('merchant')->create([
+                'name' => Str::random(8),
+                'email' => $data['email'],
+                'password' => $data['api_key'],
+                'type' => User::TYPE_MERCHANT,
+            ]);
+
+        $user->merchant()->create([
+            'domain' => $data['domain'],
+            'display_name' => $data['name'],
+        ]);
+
+        $user->load('merchant');
+
+        return $user->merchant;
     }
 
     /**
@@ -32,6 +51,20 @@ class MerchantService
     public function updateMerchant(User $user, array $data)
     {
         // TODO: Complete this method
+
+        $user->update([
+                'name' => Str::random(8),
+                'email' => $data['email'],
+                'password' => $data['api_key'],
+            ]);
+
+        $user->load('merchant');
+
+        $user->merchant()->update([
+            'domain' => $data['domain'],
+            'display_name' => $data['name'],
+        ]);
+
     }
 
     /**
@@ -44,6 +77,8 @@ class MerchantService
     public function findMerchantByEmail(string $email): ?Merchant
     {
         // TODO: Complete this method
+        $user = User::where(['email' => $email])->with('merchant')->first();
+        return $user?->merchant;
     }
 
     /**
@@ -56,5 +91,38 @@ class MerchantService
     public function payout(Affiliate $affiliate)
     {
         // TODO: Complete this method
+
+        $affiliate->load('orders');
+        $unpaidOrders = $affiliate?->orders?->where('payout_status', Order::STATUS_UNPAID);
+
+        if($unpaidOrders) {
+            return ;
+        }
+
+        foreach ($unpaidOrders as $order) {
+            dispatch(new PayoutOrderJob($order));
+        }
+    }
+
+    public function getOrderByDate(string $from, string $to): Collection
+    {
+        return Order::whereBetween('created_at', [
+            $this->getCarbon($from),
+            $this->getCarbon($to)
+        ])->get();
+    }
+
+    /**
+     * @param string $dateTime
+     * @return Carbon
+     */
+    public function getCarbon(string $dateTime): Carbon
+    {
+        $dateTime = Carbon::parse($dateTime);
+
+        if (!$dateTime->format('H:i:s')) {
+            $dateTime->setTime(0, 0, 0);
+        }
+        return $dateTime;
     }
 }

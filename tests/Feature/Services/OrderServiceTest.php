@@ -22,8 +22,10 @@ class OrderServiceTest extends TestCase
     {
         parent::setUp();
 
+        $this->user = User::factory()->create();
+
         $this->merchant = Merchant::factory()
-            ->for(User::factory())
+            ->for($this->user)
             ->create();
     }
 
@@ -46,10 +48,11 @@ class OrderServiceTest extends TestCase
         /** @var Affiliate $affiliate */
         $affiliate = Affiliate::factory()
             ->for($this->merchant)
-            ->for(User::factory())
+            ->for($this->user)
             ->create([
                 'discount_code' => $data['discount_code']
             ]);
+
 
         $this->mock(AffiliateService::class)
             ->shouldReceive('register')
@@ -62,16 +65,17 @@ class OrderServiceTest extends TestCase
             'subtotal' => $data['subtotal_price'],
             'affiliate_id' => $affiliate->id,
             'merchant_id' => $this->merchant->id,
-            'commission_owed' => $data['subtotal_price'] * $affiliate->commission_rate,
+            'commission_owed' => round($data['subtotal_price'] * $affiliate->commission_rate, 2),
             'external_order_id' => $data['order_id']
         ]);
     }
 
     public function test_process_duplicate_order()
     {
+
         /** @var Order $order */
         $order = Order::factory()
-            ->for(Merchant::factory()->for(User::factory()))
+            ->for($this->merchant)
             ->create();
 
         $data = [

@@ -16,10 +16,11 @@ return new class extends Migration
     {
         Schema::create('orders', function (Blueprint $table) {
             $table->id();
+            $table->string('external_order_id')->default('0');
             $table->foreignId('merchant_id')->constrained();
             $table->foreignId('affiliate_id')->nullable()->constrained();
             // TODO: Replace floats with the correct data types (very similar to affiliates table)
-            $table->float('subtotal');
+            $table->decimal('subtotal',8,2);
             $table->float('commission_owed')->default(0.00);
             $table->string('payout_status')->default(Order::STATUS_UNPAID);
             $table->string('discount_code')->nullable();

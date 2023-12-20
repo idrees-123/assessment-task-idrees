@@ -2,8 +2,9 @@
 
 namespace App\Services;
 
-use App\Models\Affiliate;
+use App\Mail\PayoutMail;
 use App\Models\Merchant;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use RuntimeException;
 
@@ -30,13 +31,13 @@ class ApiService
     /**
      * Send a payout to an email
      *
-     * @param  string $email
-     * @param  float $amount
+     * @param string $email
+     * @param float $amount
      * @return void
      * @throws RuntimeException
      */
     public function sendPayout(string $email, float $amount)
     {
-        //
+        Mail::to($email)->send(new PayoutMail($amount));
     }
 }
